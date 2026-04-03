@@ -28,6 +28,9 @@
                 </div>
             </div>
             <div class="last-update">Dernière mise à jour: <span id="lastUpdate">-</span></div>
+            <div id="dataSourceWarning" class="data-warning" style="margin-top: 15px; padding: 12px; background: rgba(255,193,7,0.2); border: 2px solid #ffc107; border-radius: 8px; font-size: 14px;">
+                <strong>📊 Mode:</strong> <span id="dataMode">Données de référence (API limitées)</span>
+            </div>
         </header>
 
         <section class="filters">
@@ -79,8 +82,9 @@
         </section>
 
         <footer>
-            <p>Sources: World Bank, FAO, Marchés Agricoles Français | Données indicatives</p>
-            <p class="disclaimer">Les données sont fournies à titre informatif. Vérifiez auprès de sources officielles avant toute décision d'achat.</p>
+            <p><strong>⚠️ Important:</strong> Ce dashboard utilise des données de référence basées sur les moyennes FAO/USDA/World Bank.</p>
+            <p>Les API en temps réel (Yahoo Finance) sont souvent limitées. Les prix affichés sont indicatifs et peuvent ne pas refléter les cours actuels du marché.</p>
+            <p class="disclaimer"><strong>Avertissement:</strong> Vérifiez toujours auprès de sources officielles (courtiers, bourses de matières premières) avant toute décision d'achat professionnelle.</p>
         </footer>
     </div>
 
