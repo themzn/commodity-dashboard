@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test API</title></head>
+<body>
+<h2>Test API Commodités</h2>
+<div id="results"></div>
+<script>
+async function testAPIs() {
+    const results = document.getElementById('results');
+    results.innerHTML = '<p>Chargement...</p>';
+    
+    try {
+        // Test Yahoo Finance
+        const symbol = 'ZW=F'; // Wheat futures
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=5d`;
+        
+        results.innerHTML += `<p>Appel: ${url}</p>`;
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        results.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        
+        if (data.chart && data.chart.result && data.chart.result[0]) {
+            const quote = data.chart.result[0].indicators.quote[0];
+            const latestClose = quote.close[quote.close.length - 1];
+            results.innerHTML += `<h3>✅ Prix du blé: ${latestClose} USD</h3>`;
+        }
+    } catch (error) {
+        results.innerHTML += `<p style="color:red">❌ Erreur: ${error.message}</p>`;
+    }
+}
+
+testAPIs();
+</script>
+</body>
+</html>

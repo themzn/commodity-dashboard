@@ -36,22 +36,29 @@ document.addEventListener('DOMContentLoaded', () => {
 function initializeFilters() {
     const filterChips = document.getElementById('filterChips');
     filterChips.innerHTML = COMMODITIES.map(commodity => `
-        <div class="chip" data-id="${commodity.id}">
+        <div class="chip active" data-id="${commodity.id}">
             ${commodity.icon} ${commodity.name}
         </div>
     `).join('');
 
     // Événements pour les filtres
     filterChips.querySelectorAll('.chip').forEach(chip => {
-        chip.addEventListener('click', () => {
+        chip.addEventListener('click', (e) => {
+            e.preventDefault();
             const id = chip.dataset.id;
-            if (state.activeFilters.includes(id)) {
-                state.activeFilters = state.activeFilters.filter(f => f !== id);
+            
+            // Toggle l'état actif/inactif
+            if (chip.classList.contains('active')) {
+                chip.classList.remove('active');
                 chip.classList.add('inactive');
+                state.activeFilters = state.activeFilters.filter(f => f !== id);
             } else {
-                state.activeFilters.push(id);
                 chip.classList.remove('inactive');
+                chip.classList.add('active');
+                state.activeFilters.push(id);
             }
+            
+            console.log('Filtres actifs:', state.activeFilters);
             updateDisplay();
         });
     });
@@ -518,13 +525,22 @@ function displayPrices() {
 
 function displayTrendSummary() {
     const container = document.getElementById('trendSummary');
-    const data = Object.values(state.commodityData);
     
-    const rising = data.filter(d => d.change > 0).length;
-    const falling = data.filter(d => d.change < 0).length;
-    const stable = data.filter(d => d.change === 0).length;
+    // Filtrer seulement les produits actifs
+    const filteredData = Object.entries(state.commodityData)
+        .filter(([id, _]) => state.activeFilters.includes(id))
+        .map(([_, data]) => data);
     
-    const avgChange = data.reduce((sum, d) => sum + d.change, 0) / data.length;
+    if (filteredData.length === 0) {
+        container.innerHTML = '<p style="color: #6c757d;">Aucun produit sélectionné</p>';
+        return;
+    }
+    
+    const rising = filteredData.filter(d => d.change > 0).length;
+    const falling = filteredData.filter(d => d.change < 0).length;
+    const stable = filteredData.filter(d => d.change === 0).length;
+    
+    const avgChange = filteredData.reduce((sum, d) => sum + d.change, 0) / filteredData.length;
     
     container.innerHTML = `
         <ul>
@@ -541,6 +557,9 @@ function displayPriceAlerts() {
     const alerts = [];
     
     for (const [id, data] of Object.entries(state.commodityData)) {
+        // Filtrer seulement les produits actifs
+        if (!state.activeFilters.includes(id)) continue;
+        
         const commodity = COMMODITIES.find(c => c.id === id);
         if (!commodity) continue;
         
@@ -573,6 +592,9 @@ function displayBuyingSignals() {
     const opportunities = [];
     
     for (const [id, data] of Object.entries(state.commodityData)) {
+        // Filtrer seulement les produits actifs
+        if (!state.activeFilters.includes(id)) continue;
+        
         const commodity = COMMODITIES.find(c => c.id === id);
         if (!commodity) continue;
         
@@ -619,6 +641,24 @@ function updateChart() {
     // Filtrer les produits actifs
     const filteredCommodities = COMMODITIES.filter(c => state.activeFilters.includes(c.id)).slice(0, 6);
     
+    // Si aucun produit sélectionné, détruire le graphique et afficher un message
+    if (filteredCommodities.length === 0) {
+        if (state.chart) {
+            state.chart.destroy();
+            state.chart = null;
+        }
+        
+        const chartContainer = ctx.parentElement;
+        chartContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: #6c757d;">Aucun produit sélectionné pour afficher le graphique</div>';
+        return;
+    }
+    
+    // Remettre le canvas si il a été remplacé
+    const chartContainer = ctx.parentElement;
+    if (!ctx || ctx.tagName !== 'CANVAS') {
+        chartContainer.innerHTML = '<canvas id="priceChart"></canvas>';
+    }
+    
     const datasets = filteredCommodities.map((commodity, index) => {
         const history = state.priceHistory[commodity.id] || [];
         const colors = [
@@ -645,7 +685,8 @@ function updateChart() {
         state.chart.destroy();
     }
     
-    state.chart = new Chart(ctx, {
+    const canvas = document.getElementById('priceChart');
+    state.chart = new Chart(canvas, {
         type: 'line',
         data: {
             labels: labels,
@@ -707,9 +748,17 @@ function displayNews() {
 function displayAnalysis() {
     const container = document.getElementById('analysisContainer');
     
-    // Analyse simple basée sur les données
-    const data = Object.values(state.commodityData);
-    const avgChange = data.reduce((sum, d) => sum + d.change, 0) / data.length;
+    // Filtrer seulement les produits actifs
+    const filteredData = Object.entries(state.commodityData)
+        .filter(([id, _]) => state.activeFilters.includes(id))
+        .map(([_, data]) => data);
+    
+    if (filteredData.length === 0) {
+        container.innerHTML = '<div class="analysis-grid"><p style="text-align: center; color: #6c757d; padding: 40px;">Sélectionnez des produits pour voir l\'analyse</p></div>';
+        return;
+    }
+    
+    const avgChange = filteredData.reduce((sum, d) => sum + d.change, 0) / filteredData.length;
     
     let marketSentiment = 'neutre';
     let sentimentColor = '#17a2b8';
@@ -722,16 +771,17 @@ function displayAnalysis() {
         sentimentColor = '#dc3545';
     }
     
-    // Top performers
+    // Top performers (seulement les produits filtrés)
     const sorted = Object.entries(state.commodityData)
+        .filter(([id, _]) => state.activeFilters.includes(id))
         .map(([id, data]) => ({
             ...COMMODITIES.find(c => c.id === id),
             ...data
         }))
         .sort((a, b) => b.change - a.change);
     
-    const topGainers = sorted.slice(0, 3);
-    const topLosers = sorted.slice(-3).reverse();
+    const topGainers = sorted.slice(0, Math.min(3, sorted.length));
+    const topLosers = sorted.slice(-Math.min(3, sorted.length)).reverse();
     
     container.innerHTML = `
         <div class="analysis-grid">
