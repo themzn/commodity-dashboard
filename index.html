@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord - Matières Premières Agro-alimentaires</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌾 Tableau de Bord - Marchés Agro-alimentaires</h1>
+            <div class="header-controls">
+                <div class="refresh-controls">
+                    <button id="refreshBtn" class="btn btn-primary">🔄 Actualiser</button>
+                    <label class="auto-refresh">
+                        <input type="checkbox" id="autoRefresh">
+                        <span>Auto (5 min)</span>
+                    </label>
+                </div>
+                <div class="export-controls">
+                    <button id="exportPdf" class="btn btn-secondary">📄 Export PDF</button>
+                    <button id="exportExcel" class="btn btn-secondary">📊 Export Excel</button>
+                </div>
+            </div>
+            <div class="last-update">Dernière mise à jour: <span id="lastUpdate">-</span></div>
+        </header>
+
+        <section class="filters">
+            <h3>Filtres de Produits</h3>
+            <div class="filter-chips" id="filterChips"></div>
+        </section>
+
+        <section class="summary-cards">
+            <div class="card card-info">
+                <h4>📈 Tendances du Jour</h4>
+                <div id="trendSummary">Chargement...</div>
+            </div>
+            <div class="card card-warning">
+                <h4>⚠️ Alertes Prix</h4>
+                <div id="priceAlerts">Chargement...</div>
+            </div>
+            <div class="card card-success">
+                <h4>💰 Opportunités d'Achat</h4>
+                <div id="buyingSignals">Chargement...</div>
+            </div>
+        </section>
+
+        <section class="price-section">
+            <h2>Prix des Matières Premières</h2>
+            <div class="price-grid" id="priceGrid">
+                <div class="loading">Chargement des données...</div>
+            </div>
+        </section>
+
+        <section class="charts-section">
+            <h2>Évolution des Prix (30 jours)</h2>
+            <div class="chart-container">
+                <canvas id="priceChart"></canvas>
+            </div>
+        </section>
+
+        <section class="news-section">
+            <h2>📰 Actualités du Marché</h2>
+            <div id="newsContainer">
+                <div class="loading">Chargement des actualités...</div>
+            </div>
+        </section>
+
+        <section class="analysis-section">
+            <h2>📊 Analyse de Marché</h2>
+            <div id="analysisContainer">
+                <div class="loading">Analyse en cours...</div>
+            </div>
+        </section>
+
+        <footer>
+            <p>Sources: World Bank, FAO, Marchés Agricoles Français | Données indicatives</p>
+            <p class="disclaimer">Les données sont fournies à titre informatif. Vérifiez auprès de sources officielles avant toute décision d'achat.</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
